@@ -1,0 +1,117 @@
+
+-- lower(소문자), initcap(앞글자만 대문자), upper(대문자)
+-- LOWER(string) - 문자열의 모든 문자를 소문자로 변환합니다.
+-- UPPER(string) - 문자열의 모든 문자를 대문자로 변환합니다.
+-- INITCAP(string) - 문자열의 첫 글자를 대문자로, 나머지 글자는 소문자로 변환합니다.
+
+SELECT * FROM dual;
+
+SELECT * FROM EMPLOYEES;
+    
+/*
+dual이라는 테이블은 sys가 소유하는 오라클의 표준 테이블로서,
+오직 한 행에 한 컬럼만 담고 있는 dummy 테이블 입니다.
+일시적인 산술 연산이나 날짜 연산 등에 주로 사용합니다.
+모든 사용자가 접근할 수 있습니다.
+*/
+SELECT
+    'abcDEF', lower('abcDEF'), upper('abcDEF')
+FROM
+    dual;
+    
+SELECT
+    last_name,
+    LOWER(last_name),
+    INITCAP(last_name),
+    UPPER(last_name)
+FROM employees;
+
+SELECT last_name FROM employees
+WHERE last_name = 'Austin';
+
+-- length(길이), imstr(문자 찾기, 없으면 0을 반환, 있으면 인덱스 값)
+-- LENGTH(string) - 문자열의 길이를 반환합니다.
+-- IMSTR(string, search_string, [start_position], [nth_occurrence]) - 문자열에서 특정 문자열이 나타나는 위치를 반환합니다.
+SELECT
+    'abcdef', LENGTH('abcdef'), INSTR('abcdef', 'a')
+FROM dual;
+
+SELECT
+    first_name, LENGTH(first_name), INSTR(first_name, 'a')
+FROM employees;
+
+-- substr(자를 문자열, 시작 인덱스, 길이), concat(문자 연결)
+-- substr(자를 문자열, 시작 인덱스) -> 문자열 끝까지.
+-- 인덱스 1부터 시작
+-- SUBSTR(string, start_position, [length]) - 문자열에서 지정된 위치에서 시작하여 특정 길이만큼의 부분 문자열을 반환합니다.
+-- CONCAT(string1, string2) - 두 개의 문자열을 연결합니다.
+SELECT
+    'abcdef' AS ex,
+    SUBSTR('abcdef', 2, 5),
+    CONCAT('abc', 'def') -- CONCAT의 매개값은 2개 밖에 안됨. 3개를 줄 수는 없음.
+FROM dual;
+
+SELECT
+    first_name,
+    SUBSTR(first_name, 1, 3),
+    CONCAT(first_name, last_name)
+FROM employees;
+
+-- LPAD, RPAD (좌, 우측 지정 문자열로 채우기)
+-- LPAD(string, length, [pad_string]) - 문자열의 왼쪽에 특정 문자열을 채워 지정된 길이를 만족하도록 합니다.
+-- RPAD(string, length, [pad_string]) - 문자열의 오른쪽에 특정 문자열을 채워 지정된 길이를 만족하도록 합니다.
+SELECT
+    LPAD('abc', 10, '*'),
+    RPAD('abc', 10, '*')
+FROM dual;
+
+-- LTRIM(), RTRIM(), TRIM() 공백 제거
+-- LTRIM(param1, param2) -> param2의 값을 param1에서 찾아서 제거. (왼쪽부터)
+-- RTRIM(param1, param2) -> param2의 값을 param1에서 찾아서 제거. (오른쪽부터)
+
+SELECT LTRIM('javascript_java', 'java') FROM dual;
+SELECT RTRIM('javascript_java', 'java') FROM dual;
+SELECT TRIM('     java     ') FROM dual;
+
+-- replace()
+SELECT
+    REPLACE('My dream is a president', 'president', 'programmer')
+FROM dual;
+
+SELECT
+    REPLACE(REPLACE('My dream is a president', 'president', 'programmer'), ' ', '')
+FROM dual;
+
+SELECT
+    REPLACE(CONCAT('hello', ' world'), '!', '?')
+FROM dual;
+
+/*
+문제 1.
+EMPLOYEES 테이블에서 이름, 입사일자 컬럼으로 변경(별칭)해서 이름순으로 오름차순 출력 합니다.
+조건 1) 이름 컬럼은 first_name, last_name을 붙여서 출력합니다. (CONCAT)
+조건 2) 입사일자 컬럼은 xx/xx/xx로 저장되어 있습니다. xxxxxx형태로 변경해서 출력합니다.
+*/
+SELECT
+    CONCAT(first_name, last_name) AS 이름,
+    REPLACE(hire_date, '/', '') AS 입시일자  
+FROM employees
+ORDER BY 이름 ASC;
+
+/*
+문제 2.
+EMPLOYEES 테이블에서 phone_number컬럼은 ###.###.####형태로 저장되어 있다
+여기서 처음 세 자리 숫자 대신 서울 지역변호 (02)를 붙여 
+전화 번호를 출력하도록 쿼리를 작성하세요. (CONCAT, SUBSTR 사용)
+*/
+
+
+/*
+문제 3. 
+EMPLOYEES 테이블에서 JOB_ID가 it_prog인 사원의 이름(first_name)과 급여(salary)를 출력하세요.
+조건 1) 비교하기 위한 값은 소문자로 입력해야 합니다.(힌트 : lower 이용)
+조건 2) 이름은 앞 3문자까지 출력하고 나머지는 *로 출력합니다. 
+이 열의 열 별칭은 name입니다.(힌트 : rpad와 substr 또는 substr 그리고 length 이용)
+조건 3) 급여는 전체 10자리로 출력하되 나머지 자리는 *로 출력합니다. 
+이 열의 열 별칭은 salary입니다.(힌트 : lpad 이용)
+*/
