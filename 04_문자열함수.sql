@@ -33,7 +33,7 @@ WHERE last_name = 'Austin';
 -- LENGTH(string) - 문자열의 길이를 반환합니다.
 -- IMSTR(string, search_string, [start_position], [nth_occurrence]) - 문자열에서 특정 문자열이 나타나는 위치를 반환합니다.
 SELECT
-    'abcdef', LENGTH('abcdef'), INSTR('abcdef', 'a')
+    'abcdef', LENGTH('abcdef'), INSTR('abcdef', 'z')
 FROM dual;
 
 SELECT
@@ -105,8 +105,7 @@ EMPLOYEES 테이블에서 phone_number컬럼은 ###.###.####형태로 저장되어 있다
 전화 번호를 출력하도록 쿼리를 작성하세요. (CONCAT, SUBSTR 사용)
 */
 SELECT
-    phone_number,
-    CONCAT('(02)',(SUBSTR(phone_number, 5)))
+    CONCAT('(02)', SUBSTR(phone_number, 5))
 FROM employees;
 
 
@@ -120,8 +119,7 @@ EMPLOYEES 테이블에서 JOB_ID가 it_prog인 사원의 이름(first_name)과 급여(salary)를
 이 열의 열 별칭은 salary입니다.(힌트 : lpad 이용)
 */
 SELECT
-    LOWER(job_id) AS ID,
-    RPAD((SUBSTR(first_name, 1, 3)), 10, '*') AS name,
-    LPAD(salary, 10, '*') AS 급여
+    RPAD(SUBSTR(first_name, 1, 3), LENGTH(first_name), '*') AS name,
+    LPAD(salary, 10, '#') AS salary
 FROM employees
-WHERE job_id = 'IT_PROG';
+WHERE LOWER(job_id) = 'it_prog';
