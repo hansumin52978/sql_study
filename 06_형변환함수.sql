@@ -24,7 +24,7 @@ SELECT TO_CHAR(salary, 'L99,999') AS salary
 FROM employees;
 
 -- 문자를 숫자로 TO_NUMBER(값, 형식)
--- TO_NUMBER(string, [format]) - 문자열을 지정된 형식의 날짜로 변환합니다.
+-- TO_NUMBER(string, [format]) - 문자열을 지정된 형식의 숫자로 변환합니다.
 SELECT '2000' + 2000 FROM dual; -- 자동 형 변환(문자 -> 숫자)
 SELECT TO_NUMBER('2000') + 2000 FROM dual; -- 명시적 형 변환
 SELECT '$3,300' + 2000 FROM dual; -- 에러

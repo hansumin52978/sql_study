@@ -2,7 +2,7 @@
 -- 숫자함수
 -- ROUND(반올림)
 -- 원하는 반올림 위치를 매개값으로 지정. 음수를 주는 것도 가능
--- ROUND(number, [decimal_places]) - 숫자를 지정된 소수점 자릿술 반올림합니다. 소수점 자릿수를 생략하면 정수로 반올림합니다.
+-- ROUND(number, [decimal_places]) - 숫자를 지정된 소수점 자릿수를 반올림합니다. 소수점 자릿수를 생략하면 정수로 반올림합니다.
 SELECT
     ROUND(3.1415, 3), ROUND(45.923, 0), ROUND(45.923, -1)
 FROM dual;
