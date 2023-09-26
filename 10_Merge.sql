@@ -96,6 +96,8 @@ ORDER BY employee_id ASC;
 
 ROLLBACK;
 
+SELECT * FROM jobs_it;
+
 
 
 
