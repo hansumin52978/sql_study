@@ -188,6 +188,9 @@ SELECT
     ) AS 국가이름
 FROM locations loc
 ORDER BY 국가이름 ASC;
+
+--------------------------------------------------------------------------------
+
 /*
 문제 12. 
 employees테이블, departments테이블을 left조인 hire_date를 오름차순 기준으로 
@@ -212,6 +215,23 @@ SELECT * FROM
     )
 WHERE rn > 1 AND rn < 10;
 
+-- 선생님 답안
+SELECT * FROM
+    (
+    SELECT ROWNUM AS rn, a.*
+        FROM
+        (
+            SELECT
+                e.employee_id, e.first_name, e.phone_number,
+                e.hire_date, d.department_id, d.department_name
+            FROM employees e LEFT JOIN departments d
+            ON e.department_id = d.department_id
+            ORDER BY hire_date ASC
+        ) a
+    )
+WHERE rn > 0 AND rn <= 10;
+
+
 /*
 문제 13. 
 --EMPLOYEES 와 DEPARTMENTS 테이블에서 JOB_ID가 SA_MAN 사원의 정보의 LAST_NAME, JOB_ID, 
@@ -225,11 +245,23 @@ LEFT JOIN departments d
 ON e.department_id = d.department_id
 WHERE job_id = 'SA_MAN';
 
+-- 선생님 답안
+SELECT
+    tbl.*, d.department_name
+FROM
+    (
+    SELECT
+        last_name, job_id, department_id
+    FROM employees
+    WHERE job_id = 'SA_MAN'
+    ) tbl
+JOIN departments d
+ON tbl.department_id = d.department_id;
 /*
 문제 14
 --DEPARTMENT테이블에서 각 부서의 ID, NAME, MANAGER_ID와 부서에 속한 인원수를 출력하세요.
 --인원수 기준 내림차순 정렬하세요.
---사람이 없는 부서는 출력하지 뽑지 않습니다.
+--사람이 없는 부서는 출력하지 않습니다.
 */
 SELECT
     d.department_id AS 부서_ID, d.department_name AS 부서_NAME, d.manager_id AS 매니저_ID,
@@ -239,19 +271,118 @@ JOIN employees e
 ON e.department_id = d.department_id
 GROUP BY d.department_id, d.department_name, d.manager_id;
 
+-- 선생님 답안
+SELECT
+    d.department_id, d.department_name, d.manager_id,
+    a.total
+FROM departments d
+JOIN
+    (
+    SELECT
+        department_id, COUNT(*) AS total
+    FROM employees
+    GROUP BY department_id
+    ) a
+ON d.department_id = a.department_id
+ORDER BY a.total DESC;
+
+-- 선생님 답안 2번째 방식
+SELECT
+    d.department_id, d.department_name, d.manager_id,
+    (
+        SELECT
+            COUNT(*)
+        FROM employees e
+        WHERE e.department_id = d.department_id
+    ) AS total
+FROM departments d
+WHERE manager_id IS NOT NULL
+ORDER BY total DESC;
+
 /*
 문제 15
 --부서에 대한 정보 전부와, 주소, 우편번호, 부서별 평균 연봉을 구해서 출력하세요.
 --부서별 평균이 없으면 0으로 출력하세요.
 */
-SELECT     t.*,   
-    NVL((   SELECT     AVG(salary)   
-FROM employees e   WHERE e.department_id = t.department_id   ),0) 
-AS 평균연봉 FROM  ( SELECT     d.*, loc.street_address, loc.postal_code 
-FROM departments d LEFT JOIN locations loc ON d.location_id = loc.location_id ) t;
+SELECT     
+    t.*,   
+        NVL(
+            (
+                SELECT 
+                        AVG(salary)
+                FROM employees e
+                WHERE e.department_id = t.department_id
+            ),0) AS 평균연봉
+FROM
+    (
+        SELECT
+        d.*, loc.street_address, loc.postal_code 
+        FROM departments d
+        LEFT JOIN locations loc
+        ON d.location_id = loc.location_id
+    ) t;
+
+-- 선생님 답안
+SELECT
+    d.*,
+    loc.street_address, loc.postal_code,
+    NVL(tbl.result, 0) AS 부서별평균급여
+FROM departments d
+JOIN locations loc
+ON d.location_id = loc.location_id
+LEFT JOIN
+    (
+    SELECT
+        department_id,
+        TRUNC(AVG(salary), 0) AS result
+    FROM employees
+    GROUP BY department_id
+    ) tbl
+ON d.department_id = tbl.department_id;
+
+-- 선생님 답안 2번째 방식
+SELECT
+    d.*,
+    loc.street_address, loc.postal_code,
+    NVL(
+        (
+            SELECT TRUNC(AVG(e.salary), 0)
+            FROM employees e
+            WHERE e.department_id = d.department_id
+        ),
+    0) AS 부서별평균급여
+FROM departments d
+JOIN locations loc
+ON d.location_id = loc.location_id;
 
 /*
 문제 16
--문제 15 결과에 대해 DEPARTMENT_ID기준으로 내림차순 정렬해서 
+-문제 15 결과에 대해 DEPARTMENT_ID기준으로 내림차순 정렬해서
 ROWNUM을 붙여 1-10 데이터 까지만 출력하세요.
 */
+
+-- 선생님 답안
+SELECT * FROM
+    (
+    SELECT ROWNUM AS rn, tbl2.*
+        FROM
+        (
+        SELECT
+            d.*,
+            loc.street_address, loc.postal_code,
+            NVL(tbl.result, 0) AS 부서별평균급여
+        FROM departments d
+        JOIN locations loc
+        ON d.location_id = loc.location_id
+        LEFT JOIN
+            (
+            SELECT
+                department_id,
+                TRUNC(AVG(salary), 0) AS result
+            FROM employees
+            GROUP BY department_id
+            ) tbl
+        ON d.department_id = tbl.department_id
+        ) tbl2
+    )
+WHERE rn > 0 AND rn <= 10;
