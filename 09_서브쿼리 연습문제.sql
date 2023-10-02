@@ -383,6 +383,7 @@ SELECT * FROM
             GROUP BY department_id
             ) tbl
         ON d.department_id = tbl.department_id
+        ORDER BY d.department_id DESC
         ) tbl2
     )
 WHERE rn > 0 AND rn <= 10;
