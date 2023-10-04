@@ -85,18 +85,33 @@ employee_id를 입력받아 employees에 존재하면,
 근속년수를 out하는 프로시저를 작성하세요. (익명블록에서 프로시저를 실행)
 없다면 exception처리하세요
 */
-DECLARE
-    e_employee_id employees.employee_id%TYPE
+CREATE OR REPLACE PROCEDURE hire_year_proc
+    (p_employee_id IN employees.employee_id%TYPE,
+    p_result OUT NUMBER)
+IS
+    v_hire_year NUMBER :=0 ;
 BEGIN
-    SELECT
-        employee_id
-    INTO
-        e_employee_id
-    FROM employees;
     
-    DBMS_OUTPUT.put_line(emp_name || '-' || emp_email);
-       
+    SELECT
+        TRUNC((sysdate - hire_date) / 365)
+    INTO v_hire_year
+    FROM employees
+    WHERE employee_id = p_employee_id;
+
+        p_result := v_hire_year;
+    
+    EXCEPTION WHEN OTHERS THEN 
+        dbms_output.put_line('ERROR MSG:' || SQLERRM);
+        ROLLBACK;
 END;
+
+DECLARE
+    msg NUMBER(10):=0;
+BEGIN
+    hire_year_proc(200, msg);
+    dbms_output.put_line('근속년수: '||msg||'년');
+END;
+
 
 /*
 프로시저명 - new_emp_proc
@@ -109,9 +124,35 @@ employee_id, last_name, email, hire_date, job_id를 입력받아
 병합시킬 데이터 -> 프로시저로 전달받은 employee_id를 dual에 select 때려서 비교.
 프로시저가 전달받아야 할 값: 사번, last_name, email, hire_date, job_id
 */
+CREATE OR REPLACE PROCEDURE new_emp_proc
+    (
+    p_employee_id IN emps.employee_id%TYPE,
+    p_last_name IN emps.last_name%TYPE,
+    p_email IN emps.email%TYPE ,
+    p_hire_date IN emps.hire_date%TYPE,
+    p_job_id IN emps.job_id%TYPE
+    )
+IS 
 
+BEGIN 
+    MERGE INTO emps a -- MERGE는 테이블 병합
+    USING -- 병합시킬 데이터
+        (SELECT p_employee_id AS employee_id FROM dual) b -- 병합하고자 하는 데이터를 서브쿼리로 표현
+    ON (a.employee_id = b.employee_id) -- 병합 조건으로 하는 것
+    WHEN MATCHED THEN -- 조건이 일치하는 경우 둘 다 있는 경우에는 업데이트
+        UPDATE SET 
+        a.last_name = p_last_name, 
+        a.email = p_email,
+        a.hire_date = p_hire_date,
+        a.job_id = p_job_id
+    WHEN NOT MATCHED THEN -- 조건이 일치하지 않는 경우 한 쪽에만 있는 경우에는 인설트
+    INSERT (a.employee_id, a.last_name, a.email, a.hire_date, a.job_id)
+    VALUES (p_employee_id, p_last_name, p_email, p_hire_date, p_job_id);
+END;
 
-
+EXEC new_emp_proc(100, 'MOON', 'ABC', sysdate, 'test');
+EXEC new_emp_proc(100, 'MOO', 'AB', sysdate, 'test1234');
+SELECT * FROM emps;
 
 
 
