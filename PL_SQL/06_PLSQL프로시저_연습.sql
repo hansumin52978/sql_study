@@ -1,4 +1,5 @@
 
+SET SERVEROUTPUT ON;
 /*
 프로시저명 divisor_proc
 숫자 하나를 전달받아 해당 값의 약수의 개수를 출력하는 프로시저를 선언합니다.
@@ -112,6 +113,35 @@ BEGIN
     dbms_output.put_line('근속년수: '||msg||'년');
 END;
 
+-- 선생님 답안
+CREATE OR REPLACE PROCEDURE emp_hire_proc
+    (
+    p_employee_id IN employees.employee_id%TYPE,
+    p_year OUT NUMBER
+    )
+IS
+    v_hire_date employees.hire_date%TYPE;
+BEGIN
+    SELECT
+        hire_date
+    INTO
+        v_hire_date
+    FROM employees
+    WHERE employee_id = p_employee_id;
+    
+    p_year := TRUNC((sysdate - v_hire_date) / 365);
+    
+    EXCEPTION WHEN OTHERS THEN
+        dbms_output.put_line(p_employee_id || '은(는) 없는 데이터 입니다.');
+    
+END;
+
+DECLARE
+    p_year NUMBER;
+BEGIN
+    emp_hire_proc(200, p_year);
+    dbms_output.put_line(p_year || '년');
+END;
 
 /*
 프로시저명 - new_emp_proc
@@ -138,7 +168,8 @@ BEGIN
     MERGE INTO emps a -- MERGE는 테이블 병합
     USING -- 병합시킬 데이터
         (SELECT p_employee_id AS employee_id FROM dual) b -- 병합하고자 하는 데이터를 서브쿼리로 표현
-    ON (a.employee_id = b.employee_id) -- 병합 조건으로 하는 것
+    ON
+        (a.employee_id = b.employee_id) -- 병합 조건으로 하는 것
     WHEN MATCHED THEN -- 조건이 일치하는 경우 둘 다 있는 경우에는 업데이트
         UPDATE SET 
         a.last_name = p_last_name, 
@@ -154,8 +185,38 @@ EXEC new_emp_proc(100, 'MOON', 'ABC', sysdate, 'test');
 EXEC new_emp_proc(100, 'MOO', 'AB', sysdate, 'test1234');
 SELECT * FROM emps;
 
+-- 선생님 답안
+CREATE OR REPLACE PROCEDURE new_emp_proc
+    (
+    p_employee_id IN emps.employee_id%TYPE,
+    p_last_name IN emps.last_name%TYPE,
+    p_email IN emps.email%TYPE,
+    p_hire_date IN emps.hire_date%TYPE,
+    p_job_id IN emps.job_id%TYPE
+    )
+IS
+BEGIN
+    MERGE INTO emps a -- 머지를 할 타켓 테이블
+    USING
+        (SELECT p_employee_id AS employee_id FROM dual) b
+    ON
+        (a.employee_id = b.employee_id) -- 전달받은 사번이 emps에 존재하는 지를 병합 조건으로 물어봄.
+        
+    WHEN MATCHED THEN
+        UPDATE SET
+            a.last_name = p_last_name,
+            a.email = p_email,
+            a.hire_date = p_hire_date,
+            a.job_id = p_job_id
+    WHEN NOT MATCHED THEN
+        INSERT (a.employee_id, a.last_name, a.email, a.hire_date, a.job_id)
+        VALUES (p_employee_id, p_last_name, p_email, p_hire_date, p_job_id);
+END;
 
+EXEC new_emp_proc(300, 'park', 'park4321', sysdate, 'test');
+EXEC new_emp_proc(100, 'kim', 'kim1234', '2023-04-24', 'test2');
 
+SELECT * FROM emps;
 
 
 
